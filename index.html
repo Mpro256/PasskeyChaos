@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touch ID Authentication</title>
+    <script>
+        // Function to generate a random string (for demonstration purposes only) normally you would have a server and client id stuff but too lazy sooooo
+        function randomStringFromServer(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        async function authenticateWithTouchID() {
+            const challenge = randomStringFromServer(32); // Generate a random string or get it from a server if i wasnt dumb :)
+            const publicKeyCredentialCreationOptions = {
+                challenge: Uint8Array.from(challenge, c => c.charCodeAt(0)),
+                rp: {
+                    name: "3DPEncrypter",
+                    id: window.location.hostname,
+                },
+                user: {
+                    id: Uint8Array.from(
+                        "UZSL85T9AFC", c => c.charCodeAt(0)),
+                    name: "Your User Here",
+                    displayName: "Your User Display Name Here",
+                },
+                pubKeyCredParams: [{alg: -7, type: "public-key"}],
+                authenticatorSelection: {
+                    authenticatorAttachment: "platform", // this makes it use touchid or windows hello instead of just a chrome passkey.
+                },
+                timeout: 60000,
+                attestation: "direct"
+            };
+
+            try {
+                const credential = await navigator.credentials.create({
+                    publicKey: publicKeyCredentialCreationOptions
+                });
+
+                console.log("Authentication successful:", credential);
+                alert("Touch ID authentication successful!");
+            } catch (error) {
+                console.error("Authentication error:", error);
+                alert("Touch ID authentication failed. Please try again.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Passkey Authentication Demo</h1>
+    <p>Click the button below to authenticate with a Passkey.</p>
+    <button onclick="authenticateWithTouchID()">Authenticate with Passkey (touchid or windows hello)</button>
+</body>
+</html>
